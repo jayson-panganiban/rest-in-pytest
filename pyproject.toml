@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "rest-in-pytest"
+version = "0.1.0"
+description = "REST API testing with pytest"
+authors = ["Jayson Panganiban <jsoncp@proton.me>"]
+readme = "README.md"
+packages = [{include = "rest-in-pytest"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+mypy = "^1.10.0"
+types-requests = "^2.31.0.20240406"
+types-setuptools = "^69.5.0.20240423"
+ruff = "^0.4.3"
+requests = "^2.31"
+pytest = "^8.1"
+pytest-html = "^4.1.1"
+pydantic = "^2.7.1"
+python-jsonpath = "^1.1.1"
+assertpy = "^1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.mypy]
+warn_return_any = true
+ignore_missing_imports = true
+
+[tool.ruff.format]
+quote-style = "single"
