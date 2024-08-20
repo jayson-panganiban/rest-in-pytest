@@ -1,47 +1,50 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
+from typing import Final
 from http.client import HTTPConnection
-from typing import Optional
-
-HTTPConnection.debuglevel = 1
 
 
 class Logger:
-    """This class ensures that there is only one logger isntance"""
+    DEBUG_LEVEL: Final[int] = 1
 
-    _instance: Optional['Logger'] = None
-
-    def __new__(cls) -> 'Logger':
-        """Override the __new__ method to ensure only one instance of the Logger class"""
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-            cls._instance.setup_logger()
-        return cls._instance
-
-    def setup_logger(self) -> None:
-        """Configure the logger with a default logging and adds a console logger"""
-        # TODO: Custom logger for requests
-        # Adjust for custom report
-        # self.logger = logging.getLogger("requests")
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, name: str = __name__) -> None:
+        self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        self.add_console_handler()
+        self._setup_logger()
 
-    def add_console_handler(self) -> None:
-        """Adds a console handler to the logger with a debug log level and a custom formatter."""
+    def _setup_logger(self) -> None:
         console_handler = logging.StreamHandler()
-        # TODO: Adjust for custom report
         console_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%d/%m%Y %I:%M:%S%p',
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
         console_handler.setFormatter(formatter)
         self.logger.addHandler(console_handler)
 
-    def get_logger(self) -> logging.Logger:
-        return self.logger
+    def debug(self, message: str) -> None:
+        self.logger.debug(message)
+
+    def info(self, message: str) -> None:
+        self.logger.info(message)
+
+    def warning(self, message: str) -> None:
+        self.logger.warning(message)
+
+    def error(self, message: str) -> None:
+        self.logger.error(message)
+
+    def critical(self, message: str) -> None:
+        self.logger.critical(message)
 
 
-logger = Logger().get_logger()
+@lru_cache(maxsize=None)
+def get_logger(name: str = __name__) -> Logger:
+    return Logger(name)
+
+
+HTTPConnection.debuglevel = Logger.DEBUG_LEVEL
+
+logger = get_logger()

@@ -1,21 +1,25 @@
-# rest-in-pytest
----
-## Overview
-**`rest-in-pytest`** is designed to facilitate the testing of REST APIs. It uses a Fluent Interface and a Gherkin-inspired DSL for easy configuration of HTTP requests and response expectations. 
+# Rest in Pytest (RiP)
 
-### Features
-- **Domain-Specific Language (DSL)**: Makes test scenarios easy to write and understand with a fluent interface.
-- **Configuration**:  Offers a mechanism to build request configurations such as base URL, parameters, data, headers, cookies, files, SSL verification, and more, providing a comprehensive setup for HTTP requests.
-- **Expectations**: Provides a mechanism for setting expectations on the HTTP response, including status codes, headers, cookies, body content, and JSON schema validation.
-- **Integration with pytest and requests**: Leverages `pytest` and `requests` HTTP modules.
 ---
+
+## Overview
+
+**Rest in Pytest (RiP)** is a Python library designed for REST API testing. It simplifies the process of API testing by leveraging libraries such as `pytest` and `httpx`. Additionally, it offers a fluent interface design, inspired by _Rest Assured_, for constructing and executing HTTP requests, as well as validating responses.
+
+## Features
+
+- Fluent interface for building HTTP requests
+- Flexible request configuration (headers, params, data, SSL verification, etc.)
+- Comprehensive response assertions
+- Integration with pytest for easy test execution and reporting
+
 ## Examples
-These examples are based on the tests found in `test_rip.py`. Base url is configured in `conftest.py`.
+
+These examples are based on the tests found in `tests\test_rip.py`.
 
 GET request with parameters and expect a specific status code and JSON path in the response.
-```python
-# test_rip.py
 
+```python
 def test_get_resource(base_url):
     (
         Rip()
@@ -28,7 +32,21 @@ def test_get_resource(base_url):
         .then()
         .expect_status(200)
         .expect_header_content_type('application/json; charset=utf-8')
-        .expect_json_path('$.userId', 'userId')
+        .expect_json_path(
+            "$..title",
+            [
+                "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                "qui est esse",
+                "ea molestias quasi exercitationem repellat qui ipsa sit aut",
+                "eum et est occaecati",
+                "nesciunt quas odio",
+                "dolorem eum magni eos aperiam quia",
+                "magnam facilis autem",
+                "dolorem dolore est ipsam",
+                "nesciunt iure omnis dolorem tempora et accusantium",
+                "optio molestias id quia eum",
+            ],
+        )
         .expect_json_contains(
             {
                 'userId': 1,
@@ -41,6 +59,7 @@ def test_get_resource(base_url):
 ```
 
 GET request using keyword arguments, providing a different approach to configuring the request.
+
 ```python
 def test_get_params(base_url):
     (
@@ -56,9 +75,11 @@ def test_get_params(base_url):
         .expect_status(200)
     )
 ```
+
 ---
 
 POST request with JSON data and expect a specific status code and JSON content in the response.
+
 ```python
 def test_create_resource(base_url):
     (
@@ -77,9 +98,11 @@ def test_create_resource(base_url):
         )
     )
 ```
+
 ---
 
 PUT request with JSON data to update a resource and expect a specific status code in the response.
+
 ```python
 def test_update_resource(base_url):
     (
@@ -94,56 +117,52 @@ def test_update_resource(base_url):
         .expect_status(200)
     )
 ```
+
 ---
+
 ## Getting Started
 
 ### Prerequisites
+
 Ensure you have the following prerequisites installed:
 
 - Python 3.11 or higher
+- Poetry (for dependency management)
 
 ### Installation
+
 1. **Clone the Repository**
 
-   First, clone the repository to your local machine:
-
    ```bash
-   git clone <repository-url>
-   ```
-   
-2. **Set Up a Virtual Environment**
-
-   It's recommended to use a virtual environment for Python projects. This helps to keep dependencies required by different projects separate. Create a virtual environment using the following command:
-
-   ```bash
-   python -m venv venv
+   git clone https://github.com/jayson-panganiban/rest-in-pytest.git
    ```
 
-   Activate the virtual environment:
-
-   - On Windows:
-     ```bash
-     .\venv\Scripts\activate
-     ```
-
-   - On Unix or MacOS:
-     ```bash
-     source venv/bin/activate
-     ```
-
-3. **Install Dependencies**
-
-   Navigate to the project directory and install the project dependencies using Poetry:
+2. **Install Dependencies**
 
    ```bash
    cd rest-in-pytest
    poetry install
    ```
-   This command installs all the dependencies listed in the `pyproject.toml` file.
 
-### Testing
-This project uses `pytest` for testing. To run the tests, execute the following command in the project's root directory:
+3. Create a `.env` file in the root directory and add the following environment variables:
+
+   ```bash
+    #Example
+    API_BASE_URL=https://jsonplaceholder.typicode.com
+    API_VERSION=1.0
+    PROJECT_NAME=RIP
+   ```
+
+### Running Tests
+
+Execute tests using pytest:
 
 ```bash
-pytest
+pytest -vv
+```
+
+Generate an HTML report:
+
+```
+pytest --html=report.html --self-contained-html
 ```

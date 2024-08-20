@@ -10,20 +10,34 @@ def test_get_resource(base_url):
         Rip()
         .given()
         .base_url(base_url)
-        .headers({'Content-Type': 'application/json'})
-        .params({'userId': 1})
+        .headers({"Content-Type": "application/json"})
+        .query_params({"userId": 1})
         .when()
-        .get('/posts')
+        .get("/posts")
         .then()
         .expect_status(200)
-        .expect_header_content_type('application/json; charset=utf-8')
-        .expect_json_path('$.userId', 'userId')
+        .expect_header_content_type("application/json; charset=utf-8")
+        .expect_json_path(
+            "$..title",
+            [
+                "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                "qui est esse",
+                "ea molestias quasi exercitationem repellat qui ipsa sit aut",
+                "eum et est occaecati",
+                "nesciunt quas odio",
+                "dolorem eum magni eos aperiam quia",
+                "magnam facilis autem",
+                "dolorem dolore est ipsam",
+                "nesciunt iure omnis dolorem tempora et accusantium",
+                "optio molestias id quia eum",
+            ],
+        )
         .expect_json_contains(
             {
-                'userId': 1,
-                'id': 1,
-                'title': 'sunt aut facere repellat provident occaecati excepturi optio reprehenderit',
-                'body': 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto',
+                "userId": 1,
+                "id": 1,
+                "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
             }
         )
     )
@@ -36,9 +50,9 @@ def test_get_params(base_url):
         .given(base_url)
         .when()
         .get(
-            endpoint='/posts',
-            headers={'Content-Type': 'application/json'},
-            params={'userId': 1},
+            endpoint="/posts",
+            headers={"Content-Type": "application/json"},
+            params={"userId": 1},
         )
         .then()
         .expect_status(200)
@@ -52,13 +66,13 @@ def test_create_resource(base_url):
         .given()
         .base_url(base_url)
         .data('{"title": "foo", "body": "bar", "userId": 1}')
-        .headers({'Content-type': 'application/json; charset=UTF-8'})
+        .headers({"Content-type": "application/json; charset=UTF-8"})
         .when()
-        .post('/posts')
+        .post("/posts")
         .then()
         .expect_status(201)
         # Assert reponse in json
-        .expect_json({'id': 101, 'title': 'foo', 'body': 'bar', 'userId': 1})
+        .expect_json({"id": 101, "title": "foo", "body": "bar", "userId": 1})
         # Assert response content in unicode
         .expect_body(
             '{\n  "title": "foo",\n  "body": "bar",\n  "userId": 1,\n  "id": 101\n}'
@@ -73,9 +87,9 @@ def test_post_params(base_url):
         .given(base_url)
         .when()
         .post(
-            endpoint='/posts',
+            endpoint="/posts",
             data='{"title": "foo", "body": "bar", "userId": 1}',
-            headers={'Content-type': 'application/json; charset=UTF-8'},
+            headers={"Content-type": "application/json; charset=UTF-8"},
         )
         .then()
         .expect_status(201)
@@ -88,10 +102,10 @@ def test_update_resource(base_url):
         Rip()
         .given()
         .base_url(base_url)
-        .json_data({'title': 'foo', 'body': 'bar', 'userId': 1})
-        .headers({'Content-type': 'application/json; charset=UTF-8'})
+        .json_data({"title": "foo", "body": "bar", "userId": 1})
+        .headers({"Content-type": "application/json; charset=UTF-8"})
         .when()
-        .put('/posts/1')
+        .put("/posts/1")
         .then()
         .expect_status(200)
     )
@@ -103,10 +117,10 @@ def test_patch_resource(base_url):
         Rip()
         .given()
         .base_url(base_url)
-        .json_data({'title': 'foo'})
-        .headers({'Content-type': 'application/json; charset=UTF-8'})
+        .json_data({"title": "foo"})
+        .headers({"Content-type": "application/json; charset=UTF-8"})
         .when()
-        .patch('/posts/1')
+        .patch("/posts/1")
         .then()
         .expect_status(200)
     )
@@ -120,7 +134,7 @@ def test_delete_resource(base_url):
         .base_url(base_url)
         .ssl_verify()
         .when()
-        .delete('/posts/1')
+        .delete("/posts/1")
         .then()
         .expect_status(200)
     )
@@ -135,7 +149,7 @@ def test_delete_resource(base_url):
 
 
 @pytest.mark.parametrize(
-    'path_params',
+    "path_params",
     [
         1,
         2,
@@ -146,7 +160,7 @@ def test_specs(base_url, path_params):
         Rip()
         .given()
         .base_url(base_url)
-        .params()
+        .query_params()
         .data()
         .headers()
         .cookies()
@@ -162,7 +176,7 @@ def test_specs(base_url, path_params):
         .cert()
         .json_data()
         .when()
-        .get(endpoint=f'/posts/{path_params}')
+        .get(endpoint=f"/posts/{path_params}")
         .then()
         .expect_status(200)
     )
