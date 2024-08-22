@@ -24,14 +24,14 @@ def test_get_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .headers({'Content-Type': 'application/json'})
-        .params({'userId': 1})
+        .url(base_url)
+        .headers({"Content-Type": "application/json"})
+        .params({"userId": 1})
         .when()
-        .get('/posts')
+        .get("/posts")
         .then()
         .expect_status(200)
-        .expect_header_content_type('application/json; charset=utf-8')
+        .expect_header_content_type("application/json; charset=utf-8")
         .expect_json_path(
             "$..title",
             [
@@ -49,10 +49,10 @@ def test_get_resource(base_url):
         )
         .expect_json_contains(
             {
-                'userId': 1,
-                'id': 1,
-                'title': 'sunt aut facere repellat provident occaecati excepturi optio reprehenderit',
-                'body': 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto',
+                "userId": 1,
+                "id": 1,
+                "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
             }
         )
     )
@@ -85,16 +85,18 @@ def test_create_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .data('{"title": "foo", "body": "bar", "userId": 1}')
-        .headers({'Content-type': 'application/json; charset=UTF-8'})
+        .url(base_url)
+        .headers({"Content-type": "application/json; charset=UTF-8"})
+        .content('{"title": "foo", "body": "bar", "userId": 1}')
         .when()
-        .post('/posts')
+        .post("/posts")
         .then()
         .expect_status(201)
-        .expect_json({'id': 101, 'title': 'foo', 'body': 'bar', 'userId': 1})
+        # Assert reponse in json
+        .expect_json({"id": 101, "title": "foo", "body": "bar", "userId": 1})
+        # Assert response content in unicode
         .expect_body(
-            '{\n "title": "foo",\n "body": "bar",\n "userId": 1,\n "id": 101\n}'
+            '{\n  "title": "foo",\n  "body": "bar",\n  "userId": 1,\n  "id": 101\n}'
         )
     )
 ```
@@ -108,11 +110,11 @@ def test_update_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .json_data({'title': 'foo', 'body': 'bar', 'userId': 1})
-        .headers({'Content-type': 'application/json; charset=UTF-8'})
+        .url(base_url)
+        .headers({"Content-type": "application/json; charset=UTF-8"})
+        .json({"title": "foo", "body": "bar", "userId": 1})
         .when()
-        .put('/posts/1')
+        .put("/posts/1")
         .then()
         .expect_status(200)
     )
@@ -159,6 +161,12 @@ Execute tests using pytest:
 
 ```bash
 pytest -vv
+```
+
+Execute tests with pytest-xdist:
+
+```bash
+pytest -n auto
 ```
 
 Generate an HTML report:

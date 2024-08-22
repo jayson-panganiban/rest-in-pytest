@@ -9,9 +9,9 @@ def test_get_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
+        .url(base_url)
         .headers({"Content-Type": "application/json"})
-        .query_params({"userId": 1})
+        .params({"userId": 1})
         .when()
         .get("/posts")
         .then()
@@ -64,9 +64,9 @@ def test_create_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .data('{"title": "foo", "body": "bar", "userId": 1}')
+        .url(base_url)
         .headers({"Content-type": "application/json; charset=UTF-8"})
+        .content('{"title": "foo", "body": "bar", "userId": 1}')
         .when()
         .post("/posts")
         .then()
@@ -88,7 +88,7 @@ def test_post_params(base_url):
         .when()
         .post(
             endpoint="/posts",
-            data='{"title": "foo", "body": "bar", "userId": 1}',
+            content='{"title": "foo", "body": "bar", "userId": 1}',
             headers={"Content-type": "application/json; charset=UTF-8"},
         )
         .then()
@@ -101,9 +101,9 @@ def test_update_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .json_data({"title": "foo", "body": "bar", "userId": 1})
+        .url(base_url)
         .headers({"Content-type": "application/json; charset=UTF-8"})
+        .json({"title": "foo", "body": "bar", "userId": 1})
         .when()
         .put("/posts/1")
         .then()
@@ -116,9 +116,9 @@ def test_patch_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .json_data({"title": "foo"})
+        .url(base_url)
         .headers({"Content-type": "application/json; charset=UTF-8"})
+        .json({"title": "foo"})
         .when()
         .patch("/posts/1")
         .then()
@@ -131,7 +131,7 @@ def test_delete_resource(base_url):
     (
         Rip()
         .given()
-        .base_url(base_url)
+        .url(base_url)
         .ssl_verify()
         .when()
         .delete("/posts/1")
@@ -159,9 +159,9 @@ def test_specs(base_url, path_params):
     (
         Rip()
         .given()
-        .base_url(base_url)
-        .query_params()
-        .data()
+        .url(base_url)
+        .params()
+        .content()
         .headers()
         .cookies()
         .files()
@@ -174,7 +174,7 @@ def test_specs(base_url, path_params):
         .stream()
         .ssl_verify()
         .cert()
-        .json_data()
+        .json()
         .when()
         .get(endpoint=f"/posts/{path_params}")
         .then()

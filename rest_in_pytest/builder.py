@@ -8,35 +8,34 @@ from httpx import Response
 
 from .expect import Expect
 from .request import RequestService
-from .request_config import RequestConfig
-from .request_specs import RequestSpecs
+from .request_config import RequestConfiguration
 
 
 class Rip:
     """
-    The `Rip` class provides a fluent interface for building and configuring the request specifications for an HTTP request.
-    The `given()` method returns a new instance of the `ConfigBuilder` class, which can be used to configure the request specifications.
+    The `Rip` class provides a fluent interface for building and configuring the request for an HTTP request.
+
     """
 
-    def given(self, base_url: str = "") -> ConfigBuilder:
+    def given(self, url: str = "") -> ConfigBuilder:
         """
-        Constructs a new `ConfigBuilder` instance with the provided base URL. If no base URL is provided, base_url configuration must be used.
+        Starting point for configuring the request.
 
         Args:
-            base_url (Optional[str]): The base URL to use for the HTTP requests.
+            url (Optional[str]): The base URL to use for the HTTP requests.
 
         Returns:
             ConfigBuilder: A new `ConfigBuilder` instance with the specified base URL.
+            If no base URL is provided, url configuration must be used.
         """
-        return ConfigBuilder(base_url)
+        return ConfigBuilder(url)
 
 
 class ConfigBuilder:
     """
-    The `ConfigBuilder` class is responsible for building and configuring the request specifications
-    for an HTTP request. It provides a fluent interface for setting various request configurations.
+    The `ConfigBuilder`class is responsible for building and configuring the request.
 
-    - `base_url`: Base URL for the HTTP requests.
+    - `url`: Base URL for the HTTP requests.
     - `params`: Query parameters to include in the request.
     - `data`: Request body data (for POST/PUT requests).
     - `json_data`: JSON data to include in the request body.
@@ -50,80 +49,75 @@ class ConfigBuilder:
     - `cert`: Client-side certificate to use for the request.
     - `when`: Returns a `RequestBuilder` instance to execute the request
         The `when()` method returns a `RequestBuilder` instance that can be used
-        to execute the HTTP request with the configured specifications.
+        to execute the HTTP request with the configured.
     """
 
-    def __init__(self, base_url: str = "") -> None:
-        self._request_specs = RequestSpecs()
-        self._request_config = RequestConfig()
-        self._request_specs.base_url = base_url
+    def __init__(self, url: str = "") -> None:
+        self._request_config = RequestConfiguration(url=url)
 
-    def base_url(self, base_url: str) -> ConfigBuilder:
+    def url(self, url: str) -> ConfigBuilder:
         """
         Sets the base URL for the HTTP requests.
 
         Args:
-            base_url (str): The base URL to use for the HTTP requests.
+            url (str): The URL to use for the HTTP requests.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if base_url is not None:
-            self._request_specs.base_url = base_url
-        return self
+        return self if url is None else self._request_config.update(url=url) or self
 
-    def query_params(
+    def params(
         self,
-        query_params: Optional[Union[Dict[str, Any], List[tuple], bytes, str]] = None,
+        params: Optional[Union[Dict[str, Any], List[tuple], bytes, str]] = None,
     ) -> ConfigBuilder:
         """
         Sets the query parameters for the HTTP requests.
 
         Args:
-            query_params (Optional[Union[Dict[str, Any], List[tuple], bytes, str]]): The query parameters to use.
+            params (Optional[Union[Dict[str, Any], List[tuple], bytes, str]]): The query parameters to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if query_params is not None:
-            self._request_specs.query_params = query_params
-            self._request_config.parameters["params"] = query_params
-        return self
+        return (
+            self
+            if params is None
+            else self._request_config.update(params=params) or self
+        )
 
-    def data(
-        self, data: Optional[Union[Dict[str, Any], bytes, str]] = None
+    def content(
+        self, content: Optional[Union[Dict[str, Any], bytes, str]] = None
     ) -> ConfigBuilder:
         """
-        Sets the request body data for the HTTP requests.
+        Sets the request body in raw bytes/text content for the HTTP requests.
 
         Args:
-            data (Optional[Union[Dict[str, Any], bytes, str]]): The request body data to use.
+            content (Optional[Union[Dict[str, Any], bytes, str]]): The request body to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if data is not None:
-            self._request_specs.data = data
-            self._request_config.parameters["data"] = data
-        return self
+        return (
+            self
+            if content is None
+            else self._request_config.update(content=content) or self
+        )
 
-    def json_data(self, json_data: Optional[Dict[str, Any]] = None) -> ConfigBuilder:
+    def json(self, json: Optional[Dict[str, Any]] = None) -> ConfigBuilder:
         """
         Sets the JSON data to be included in the request body.
 
         Args:
-            json_data (Optional[Dict[str, Any]]): The JSON data to include in the request body.
+            json (Optional[Dict[str, Any]]): The JSON data to include in the request body.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
 
         Example:
-            json_data = {"key": "value"}
+            json = {"key": "value"}
         """
-        if json_data is not None:
-            self._request_specs.json_data = json_data
-            self._request_config.parameters["json"] = json_data
-        return self
+        return self if json is None else self._request_config.update(json=json) or self
 
     def headers(self, headers: Optional[Dict[str, Any]] = None) -> ConfigBuilder:
         """
@@ -133,12 +127,13 @@ class ConfigBuilder:
             headers (Optional[Dict[str, Any]]): The headers to use for the requests.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if headers is not None:
-            self._request_specs.headers = headers
-            self._request_config.parameters["headers"] = headers
-        return self
+        return (
+            self
+            if headers is None
+            else self._request_config.update(headers=headers) or self
+        )
 
     def cookies(self, cookies: Optional[str] = None) -> ConfigBuilder:
         """
@@ -148,12 +143,13 @@ class ConfigBuilder:
             cookies (Optional[str]): The cookies to use for the requests.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if cookies is not None:
-            self._request_specs.cookies = cookies
-            self._request_config.parameters["cookies"] = cookies
-        return self
+        return (
+            self
+            if cookies is None
+            else self._request_config.update(cookies=cookies) or self
+        )
 
     def auth(self, auth: Optional[tuple] = None) -> ConfigBuilder:
         """
@@ -163,12 +159,9 @@ class ConfigBuilder:
             auth (Optional[Tuple]): The authentication credentials to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if auth is not None:
-            self._request_specs.auth = auth
-            self._request_config.parameters["auth"] = auth
-        return self
+        return self if auth is None else self._request_config.update(auth=auth) or self
 
     def files(self, files: Optional[Dict[str, Any]] = None) -> ConfigBuilder:
         """
@@ -178,12 +171,11 @@ class ConfigBuilder:
              files (Optional[Dict[str, Any]]): The files to be uploaded.
 
          Returns:
-             ConfigBuilder: The current `ConfigBuilder` instance.
+             ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if files is not None:
-            self._request_specs.files = files
-            self._request_config.parameters["files"] = files
-        return self
+        return (
+            self if files is None else self._request_config.update(files=files) or self
+        )
 
     def proxies(self, proxies: Optional[Dict] = None) -> ConfigBuilder:
         """
@@ -193,12 +185,13 @@ class ConfigBuilder:
             proxies (Optional[Dict]): The proxy configuration to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if proxies is not None:
-            self._request_specs.proxies = proxies
-            self._request_config.parameters["proxies"] = proxies
-        return self
+        return (
+            self
+            if proxies is None
+            else self._request_config.update(proxies=proxies) or self
+        )
 
     def stream(self, stream: Optional[bool] = None) -> ConfigBuilder:
         """
@@ -209,12 +202,13 @@ class ConfigBuilder:
             stream (Optional[bool]): Whether to stream the response content.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if stream is not None:
-            self._request_specs.stream = stream
-            self._request_config.parameters["stream"] = stream
-        return self
+        return (
+            self
+            if stream is None
+            else self._request_config.update(stream=stream) or self
+        )
 
     def ssl_verify(self, verify: Optional[Union[bool, str]] = None) -> ConfigBuilder:
         """
@@ -224,12 +218,13 @@ class ConfigBuilder:
             verify (Optional[Union[bool, str]]): The SSL verification setting to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if verify is not None:
-            self._request_specs.verify = verify
-            self._request_config.parameters["verify"] = verify
-        return self
+        return (
+            self
+            if verify is None
+            else self._request_config.update(verify=verify) or self
+        )
 
     def cert(self, cert: Optional[Union[str, Tuple[str, str]]] = None) -> ConfigBuilder:
         """
@@ -239,50 +234,50 @@ class ConfigBuilder:
             cert (Optional[Cert]): The SSL certificate to use.
 
         Returns:
-            ConfigBuilder: The current `ConfigBuilder` instance.
+            ConfigBuilder: The current `ConfigBuilder`instance.
         """
-        if cert is not None:
-            self._request_specs.cert = cert
-            self._request_config.parameters["cert"] = cert
-        return self
+        return self if cert is None else self._request_config.update(cert=cert) or self
 
     def when(self) -> RequestBuilder:
         """
         Transitions from the configuration phase to the request building phase.
-        - `get`: Sends an HTTP GET request
-        - `post`: Sends an HTTP POST request
-        - `put`: Sends an HTTP PUT request
-        - `patch`: Sends an HTTP PATCH request
-        - `delete`: Sends an HTTP DELETE request
-        - `options`: Sends an HTTP OPTIONS request
-        - `head`: Sends an HTTP HEAD request
-        - `trace`: Sends an HTTP TRACE request
-        - `connect`: Sends an HTTP CONNECT request
-        - `clear`: Clears the request specifications.
-        - `copy`: Returns a copy of the `RequestConfig`.
-        - `then`: Returns a `ExpectBuilder` to build expectations of HTTP response.
 
         Returns:
             RequestBuilder: A new `RequestBuilder` instance configured with the current settings.
         """
-        if self._request_specs.base_url is None:
-            raise ValueError("Base URL must be set before making a request")
-        return RequestBuilder(
-            RequestService(self._request_specs.base_url), self._request_config
-        )
+        return RequestBuilder(self._request_config)
 
 
 class RequestBuilder:
-    def __init__(self, request: RequestService, request_config: RequestConfig) -> None:
-        """
-        Initializes a new `RequestBuilder` instance.
+    """
+    The `RequestBuilder` class is responsible for building and executing HTTP requests.
 
-        Args:
-            request (RequestService): The `RequestService` instance to use for making HTTP requests.
-            request_config (RequestConfig): The `RequestConfig` instance containing the request configuration.
-        """
-        self._request = request
+    - `get`: Sends an HTTP GET request
+    - `post`: Sends an HTTP POST request
+    - `put`: Sends an HTTP PUT request
+    - `patch`: Sends an HTTP PATCH request
+    - `delete`: Sends an HTTP DELETE request
+    - `options`: Sends an HTTP OPTIONS request
+    - `head`: Sends an HTTP HEAD request
+    - `trace`: Sends an HTTP TRACE request
+    - `connect`: Sends an HTTP CONNECT request
+    - `clear`: Clears the request.
+    - `copy`: Returns a copy of the `RequestConfig`.
+    - `then`: Returns a `ExpectBuilder` to build expectations of HTTP response.
+    """
+
+    def __init__(self, request_config: RequestConfiguration) -> None:
+        self._request = RequestService()
         self._request_config = request_config
+
+    def _make_request(self, method: str, endpoint: str, **kwargs):
+        self._request_config.update(
+            url=f"{self._request_config.url}{endpoint}", **kwargs
+        )
+        self._response = getattr(self._request, method.lower())(
+            **self._request_config.parameters
+        )
+        return self
 
     def get(self, endpoint: str, **kwargs):
         """
@@ -290,14 +285,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the GET request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.get(endpoint, **self._request_config.parameters)
-        return self
+        return self._make_request("GET", endpoint, **kwargs)
 
     def post(self, endpoint: str, **kwargs):
         """
@@ -305,14 +298,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the POST request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.post(endpoint, **self._request_config.parameters)
-        return self
+        return self._make_request("POST", endpoint, **kwargs)
 
     def put(self, endpoint: str, **kwargs):
         """
@@ -320,14 +311,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the PUT request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.put(endpoint, **self._request_config.parameters)
-        return self
+        return self._make_request("PUT", endpoint, **kwargs)
 
     def delete(self, endpoint: str, **kwargs):
         """
@@ -335,16 +324,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the DELETE request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.delete(
-            endpoint, **self._request_config.parameters
-        )
-        return self
+        return self._make_request("DELETE", endpoint, **kwargs)
 
     def patch(self, endpoint: str, **kwargs):
         """
@@ -352,16 +337,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the PATCH request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.patch(
-            endpoint, **self._request_config.parameters
-        )
-        return self
+        return self._make_request("PATCH", endpoint, **kwargs)
 
     def head(self, endpoint: str, **kwargs):
         """
@@ -369,14 +350,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the HEAD request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.head(endpoint, **self._request_config.parameters)
-        return self
+        return self._make_request("PATCH", endpoint, **kwargs)
 
     def options(self, endpoint: str, **kwargs):
         """
@@ -384,16 +363,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the OPTIONS request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.options(
-            endpoint, **self._request_config.parameters
-        )
-        return self
+        return self._make_request("OPTIONS", endpoint, **kwargs)
 
     def trace(self, endpoint: str, **kwargs):
         """
@@ -401,16 +376,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the TRACE request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.trace(
-            endpoint, **self._request_config.parameters
-        )
-        return self
+        return self._make_request("TRACE", endpoint, **kwargs)
 
     def connect(self, endpoint: str, **kwargs):
         """
@@ -418,16 +389,12 @@ class RequestBuilder:
 
         Args:
             endpoint (str): The URL endpoint to send the CONNECT request to.
-            **kwargs: Additional keyword arguments to pass to the underlying requests library.
+            **kwargs: Additional keyword arguments to pass to the the requests.
 
         Returns:
             RequestBuilder: The current `RequestBuilder` instance.
         """
-        self._request_config.update(**kwargs)
-        self._response = self._request.connect(
-            endpoint, **self._request_config.parameters
-        )
-        return self
+        return self._make_request("CONNECT", endpoint, **kwargs)
 
     def close(self):
         """
@@ -455,13 +422,6 @@ class RequestBuilder:
 
         Returns:
             ExpectBuilder: A new `ExpectBuilder` instance for asserting the response.
-
-        It provides a fluent interface for defining various expectations, such as:
-        - Expecting a specific HTTP status code
-        - Expecting a specific Content-Type header
-        - Expecting specific headers
-        - Expecting specific cookies
-        - Expecting the response body to match certain criteria (e.g. equal to, contain, be valid JSON, etc.)
         """
         return ExpectBuilder(self._response)
 
